@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WeatherTab · a calm, customisable new tab</title>
+<meta name="description" content="A new tab page for Firefox and Chrome with live weather, tiles, a drag-and-snap layout editor, Catppuccin / Dracula / Nord themes, animated backgrounds and city photos that follow your clock. No accounts, no tracking.">
+<meta property="og:title" content="WeatherTab">
+<meta property="og:description" content="A calm, customisable new tab with live weather, themes and time-of-day city backgrounds.">
+<meta property="og:image" content="img/hero.png">
+<link rel="icon" href="img/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#1e2030; --bg2:#181926; --card:#24273a; --card2:#363a4f; --line:#494d64;
+    --text:#cad3f4; --muted:#a5adcb; --accent:#c6a0f6; --accent2:#8aadf4; --on:#181926;
+    --r:18px;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#eff1f5; --bg2:#e6e9ef; --card:#ffffff; --card2:#ccd0da; --line:#bcc0cc; --text:#4c4f69; --muted:#6c6f85; --accent:#8839ef; --accent2:#1e66f5; --on:#eff1f5; }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 Inter, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color: var(--accent2); }
+  .wrap { width:min(1080px, 100% - 40px); margin-inline:auto; }
+  header.nav { position:sticky; top:0; z-index:5; backdrop-filter:blur(12px); background:color-mix(in srgb, var(--bg) 80%, transparent); border-bottom:1px solid color-mix(in srgb, var(--line) 50%, transparent); }
+  .nav .wrap { display:flex; align-items:center; gap:18px; height:60px; }
+  .brand { display:flex; align-items:center; gap:10px; font-weight:700; color:var(--text); text-decoration:none; }
+  .brand img { width:28px; height:28px; border-radius:7px; }
+  .nav nav { margin-left:auto; display:flex; gap:20px; font-size:.92rem; }
+  .nav nav a { color:var(--muted); text-decoration:none; }
+  .nav nav a:hover { color:var(--text); }
+  @media (max-width:640px){ .nav nav a:not(.keep){display:none;} }
+  .hero { padding:72px 0 28px; text-align:center; }
+  .eyebrow { display:inline-block; padding:5px 12px; border-radius:999px; font-size:.78rem; font-weight:600; letter-spacing:.04em; color:var(--accent); background:color-mix(in srgb, var(--accent) 14%, transparent); }
+  h1 { font-size:clamp(2.3rem, 6vw, 4rem); line-height:1.08; margin:18px auto 16px; max-width:15ch; letter-spacing:-.02em; }
+  h1 em { font-style:normal; color:var(--accent); }
+  .lead { max-width:60ch; margin:0 auto 28px; color:var(--muted); font-size:1.12rem; }
+  .cta { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; }
+  .btn { display:inline-flex; align-items:center; gap:8px; padding:12px 20px; border-radius:12px; font-weight:600; text-decoration:none; border:1px solid var(--line); color:var(--text); background:var(--card); transition:transform .12s, border-color .12s; }
+  .btn:hover { transform:translateY(-2px); border-color:var(--accent); }
+  .btn.primary { background:var(--accent); color:var(--on); border-color:transparent; }
+  .shot { margin:44px auto 0; border-radius:20px; overflow:hidden; border:1px solid var(--line); box-shadow:0 30px 80px rgba(0,0,0,.45); background:var(--card); }
+  .shot img { display:block; width:100%; height:auto; }
+  .note { font-size:.82rem; color:var(--muted); margin-top:10px; }
+  section { padding:72px 0 8px; }
+  h2 { font-size:clamp(1.6rem, 3.4vw, 2.2rem); margin:0 0 10px; letter-spacing:-.01em; }
+  .sub { color:var(--muted); margin:0 0 30px; max-width:62ch; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(230px,1fr)); gap:16px; }
+  .card { background:var(--card); border:1px solid color-mix(in srgb, var(--line) 70%, transparent); border-radius:var(--r); padding:22px; }
+  .card h3 { margin:0 0 6px; font-size:1.05rem; }
+  .card p { margin:0; color:var(--muted); font-size:.95rem; }
+  .ico { width:40px; height:40px; border-radius:12px; display:grid; place-items:center; font-size:1.25rem; margin-bottom:12px; background:color-mix(in srgb, var(--accent) 16%, transparent); }
+  .gallery { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(420px,100%),1fr)); gap:16px; }
+  .gallery figure { margin:0; }
+  .gallery img { width:100%; height:auto; display:block; border-radius:14px; border:1px solid var(--line); }
+  .gallery figcaption { font-size:.85rem; color:var(--muted); padding:8px 2px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .chip { padding:5px 12px; border-radius:999px; font-size:.82rem; background:var(--card); border:1px solid var(--line); }
+  .install { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:16px; }
+  .install .card h3 { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  ol { padding-left:1.2em; margin:12px 0 16px; color:var(--muted); }
+  ol li { margin:6px 0; }
+  ol b, ol code { color:var(--text); }
+  code { font:.86em ui-monospace, SFMono-Regular, Menlo, monospace; background:var(--bg2); padding:2px 6px; border-radius:6px; }
+  .callout { margin-top:16px; padding:14px 16px; border-radius:14px; background:color-mix(in srgb, var(--accent2) 10%, transparent); border:1px solid color-mix(in srgb, var(--accent2) 35%, transparent); font-size:.9rem; color:var(--muted); }
+  table { width:100%; border-collapse:collapse; font-size:.92rem; }
+  th, td { text-align:left; padding:10px 12px; border-bottom:1px solid color-mix(in srgb, var(--line) 60%, transparent); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; }
+  .tablewrap { overflow-x:auto; background:var(--card); border:1px solid color-mix(in srgb, var(--line) 70%, transparent); border-radius:var(--r); }
+  footer { margin-top:80px; padding:34px 0 50px; border-top:1px solid color-mix(in srgb, var(--line) 50%, transparent); color:var(--muted); font-size:.88rem; }
+  footer .wrap { display:flex; flex-wrap:wrap; gap:12px 24px; justify-content:space-between; }
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="img/icon.svg" alt="">WeatherTab</a>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#themes">Themes</a>
+      <a href="#privacy">Privacy</a>
+      <a class="keep" href="demo.html">Live demo</a>
+      <a class="keep" href="#install">Install</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap hero">
+    <span class="eyebrow">Firefox · Chrome · Edge · Brave</span>
+    <h1>A new tab that feels <em>yours</em>.</h1>
+    <p class="lead">Live weather, tiles you can drag and snap into place, Catppuccin, Dracula and Nord themes, animated backgrounds, and city photos that change with the time of day. No accounts. No tracking.</p>
+    <div class="cta">
+      <a class="btn primary" href="#install">Get WeatherTab</a>
+      <a class="btn" href="demo.html">Try the live demo</a>
+    </div>
+    <div class="shot"><img src="img/hero.png" alt="WeatherTab new tab page with a night skyline background, clock, weather card, search bar and link tiles" width="1440" height="900"></div>
+    <p class="note">Screenshot from the demo build: sample weather, and the built-in drawn skyline that appears whenever a city photo can't load.</p>
+  </div>
+
+  <section id="features"><div class="wrap">
+    <h2>Everything on one calm page</h2>
+    <p class="sub">Built to be quick to open and easy to rearrange.</p>
+    <div class="grid">
+      <div class="card"><div class="ico">⛅</div><h3>Live weather</h3><p>Current conditions and a 5-day forecast from Open-Meteo. Search a city or use your location. °C or °F.</p></div>
+      <div class="card"><div class="ico">🧩</div><h3>Layout editor</h3><p>Move, resize or remove the clock, date, greeting, weather, search and links. Everything snaps to a 12-column grid so it stays even.</p></div>
+      <div class="card"><div class="ico">🔖</div><h3>Tiles with real icons</h3><p>Grouped link tiles. Search thousands of icons, upload your own, tint them with your accent, and size tiles and icons freely.</p></div>
+      <div class="card"><div class="ico">🎨</div><h3>10 themes, real accents</h3><p>Catppuccin Latte, Frappé, Macchiato and Mocha; Dracula and Alucard; Nord and Nord Light. Each has its own accent swatches.</p></div>
+      <div class="card"><div class="ico">✨</div><h3>Animated backgrounds</h3><p>Aurora, stars, rain, snow, fireflies, waves, or match the weather. Light on battery and respects “reduce motion”.</p></div>
+      <div class="card"><div class="ico">🌆</div><h3>City photos by time of day</h3><p>Tokyo, London, New York, Paris, Sydney, Dubai, Singapore and Auckland. Dawn, day, dusk and night photos follow your clock. Add your own.</p></div>
+      <div class="card"><div class="ico">🔤</div><h3>Fonts</h3><p>A curated set of font pairings, loaded only when you choose one.</p></div>
+      <div class="card"><div class="ico">💾</div><h3>Backup &amp; sync-free</h3><p>Export and import your setup as a file to move between browsers or computers.</p></div>
+    </div>
+  </div></section>
+
+  <section id="themes"><div class="wrap">
+    <h2>Themes</h2>
+    <p class="sub">Full palettes, not just a tint. Every theme brings its own accent colours.</p>
+    <div class="gallery">
+      <figure><img loading="lazy" src="img/nord.png" alt="Nord theme with starry animated background"><figcaption>Nord · starry animation</figcaption></figure>
+      <figure><img loading="lazy" src="img/dracula.png" alt="Dracula theme"><figcaption>Dracula · pink accent</figcaption></figure>
+      <figure><img loading="lazy" src="img/latte.png" alt="Catppuccin Latte light theme"><figcaption>Catppuccin Latte · light</figcaption></figure>
+      <figure><img loading="lazy" src="img/settings.png" alt="Settings panel with tabs and accent colour swatches"><figcaption>Settings panel</figcaption></figure>
+    </div>
+    <div class="chips" style="margin-top:18px">
+      <span class="chip">Catppuccin Latte</span><span class="chip">Frappé</span><span class="chip">Macchiato</span><span class="chip">Mocha</span>
+      <span class="chip">Dracula</span><span class="chip">Alucard</span><span class="chip">Nord</span><span class="chip">Nord Light</span>
+    </div>
+  </div></section>
+
+  <section id="install"><div class="wrap">
+    <h2>Install</h2>
+    <p class="sub">Not in the extension stores yet, so you install it yourself. It takes about a minute.</p>
+    <div class="install">
+      <div class="card">
+        <h3>Chrome · Edge · Brave <a class="btn primary" href="downloads/weathertab-chrome.zip" download>Download .zip</a></h3>
+        <ol>
+          <li>Unzip the file somewhere it can stay (the browser reads it from there).</li>
+          <li>Open <code>chrome://extensions</code> (<code>edge://extensions</code>, <code>brave://extensions</code>) and switch on <b>Developer mode</b>.</li>
+          <li>Click <b>Load unpacked</b> and pick the unzipped folder.</li>
+          <li>Open a new tab.</li>
+        </ol>
+        <p class="note">Chrome may show a “Change back?” bar for extensions that replace the new tab. Dismiss it.</p>
+      </div>
+      <div class="card">
+        <h3>Firefox <a class="btn primary" href="downloads/weathertab-firefox.xpi" download>Download .xpi</a></h3>
+        <ol>
+          <li>Open <code>about:debugging#/runtime/this-firefox</code>.</li>
+          <li>Click <b>Load Temporary Add-on…</b> and choose the downloaded file (or the unzipped <code>manifest.json</code>).</li>
+          <li>Open a new tab.</li>
+        </ol>
+        <p class="note">Temporary add-ons are removed when Firefox restarts. For a permanent install, see below.</p>
+      </div>
+    </div>
+    <div class="callout"><b>Permanent Firefox install:</b> regular Firefox only keeps add-ons that Mozilla has signed. You can get this one signed for free by uploading it as a self-distributed (unlisted) add-on at <a href="https://addons.mozilla.org/developers/">addons.mozilla.org/developers</a>, then installing the signed file. Firefox Developer Edition and Nightly can also load the unsigned file permanently after setting <code>xpinstall.signatures.required</code> to <code>false</code> in <code>about:config</code>.</div>
+  </div></section>
+
+  <section id="privacy"><div class="wrap">
+    <h2>Privacy</h2>
+    <p class="sub">Your links, settings and uploaded photos stay in your browser. There are no accounts and no analytics. The only network requests happen when you use these features:</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Feature</th><th>Contacts</th><th>What it learns</th></tr></thead>
+      <tbody>
+        <tr><td>Weather</td><td>open-meteo.com</td><td>The coordinates of the location you chose</td></tr>
+        <tr><td>City search</td><td>geocoding-api.open-meteo.com</td><td>The place name you typed</td></tr>
+        <tr><td>Icon search</td><td>api.iconify.design</td><td>Your search words</td></tr>
+        <tr><td>City photos (optional)</td><td>commons.wikimedia.org</td><td>Your IP address</td></tr>
+        <tr><td>Theme fonts (optional)</td><td>Google Fonts</td><td>Your IP address</td></tr>
+        <tr><td>Site favicons (optional, off by default)</td><td>icons.duckduckgo.com</td><td>The domains of your tiles</td></tr>
+      </tbody>
+    </table></div>
+  </div></section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>WeatherTab · MIT licence</span>
+    <span>City photos are from Wikimedia Commons under their own licences (credit shown in the extension). Weather by <a href="https://open-meteo.com/">Open-Meteo</a>, icons by <a href="https://iconify.design/">Iconify</a>. Not affiliated with the Catppuccin, Dracula or Nord projects.</span>
+  </div>
+</footer>
+</body>
+</html>

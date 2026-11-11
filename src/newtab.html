@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>New Tab</title>
+  <link rel="stylesheet" href="newtab.css">
+</head>
+<body>
+  <div id="bg"></div>
+  <div id="bgOverlay"></div>
+  <canvas id="fx" hidden aria-hidden="true"></canvas>
+  <a id="photoCredit" class="photoCredit" hidden target="_blank" rel="noopener noreferrer"></a>
+
+  <main id="app">
+    <div id="editBar" class="editBar" hidden></div>
+
+    <div id="layout" class="layout">
+      <div class="widget" data-widget="clock">
+        <div class="clockBlock">
+          <div id="time" class="time" aria-live="off"></div>
+        </div>
+      </div>
+
+      <div class="widget" data-widget="date">
+        <div id="date" class="date"></div>
+      </div>
+
+      <div class="widget" data-widget="greeting">
+        <div id="greeting" class="greeting"></div>
+      </div>
+
+      <div class="widget" data-widget="weather">
+        <section id="weather" class="weather" hidden></section>
+      </div>
+
+      <div class="widget" data-widget="search">
+        <form id="searchForm" class="search" autocomplete="off">
+          <span class="searchIcon" aria-hidden="true">⌕</span>
+          <input id="searchInput" type="text" placeholder="Search…  (press / to focus)" spellcheck="false">
+        </form>
+      </div>
+
+      <div class="widget" data-widget="links">
+        <section id="groups" class="groups"></section>
+      </div>
+    </div>
+  </main>
+
+  <div class="fab">
+    <button id="editBtn" class="iconBtn" title="Edit layout and links" aria-label="Edit layout and links">✎</button>
+    <button id="settingsBtn" class="iconBtn" title="Settings" aria-label="Settings">⚙</button>
+  </div>
+
+  <!-- Settings drawer -->
+  <aside id="settings" class="drawer" hidden>
+    <div class="drawerHead">
+      <h2>Settings</h2>
+      <button id="closeSettings" class="iconBtn small" aria-label="Close">✕</button>
+    </div>
+
+    <div class="settingsWrap">
+    <nav class="settingsNav" id="settingsNav" role="tablist" aria-label="Settings sections"></nav>
+    <div class="drawerBody">
+      <details open>
+        <summary>General</summary>
+        <label class="row"><span>Your name</span><input type="text" data-setting="name" placeholder="Optional"></label>
+        <label class="row"><span>Show greeting</span><input type="checkbox" data-setting="showGreeting"></label>
+        <label class="row"><span>Show date</span><input type="checkbox" data-setting="showDate"></label>
+        <label class="row"><span>Time format</span>
+          <select data-setting="timeFormat"><option value="24">24-hour</option><option value="12">12-hour</option></select>
+        </label>
+        <label class="row"><span>Show seconds</span><input type="checkbox" data-setting="showSeconds"></label>
+        <label class="row"><span>Open links in new tab</span><input type="checkbox" data-setting="newTab"></label>
+      </details>
+
+      <details open>
+        <summary>Weather</summary>
+        <label class="row"><span>Show weather</span><input type="checkbox" data-setting="weather.enabled"></label>
+        <label class="row"><span>Units</span>
+          <select data-setting="weather.units"><option value="metric">°C · km/h</option><option value="imperial">°F · mph</option></select>
+        </label>
+        <label class="row"><span>Show 5-day forecast</span><input type="checkbox" data-setting="weather.forecast"></label>
+        <div class="stack">
+          <span class="label">Location: <strong id="currentPlace">not set</strong></span>
+          <div class="inline">
+            <input id="placeInput" type="text" placeholder="Search for a city…">
+            <button id="placeSearchBtn" type="button" class="btn">Search</button>
+          </div>
+          <div id="placeResults" class="results"></div>
+          <button id="geoBtn" type="button" class="btn ghost">Use my current location</button>
+          <p id="placeMsg" class="hint"></p>
+        </div>
+        <p class="hint">Weather data from Open-Meteo. Only the coordinates of your chosen location are sent.</p>
+      </details>
+
+      <details>
+        <summary>Search</summary>
+        <label class="row"><span>Search engine</span>
+          <select id="engineSelect" data-setting="engine"></select>
+        </label>
+      </details>
+
+      <details>
+        <summary>Appearance</summary>
+        <label class="row"><span>Theme</span>
+          <select data-setting="theme"><option value="macchiato">Catppuccin Macchiato</option><option value="dark">Dark</option><option value="light">Light</option><option value="auto">Match system</option></select>
+        </label>
+        <div class="stack">
+          <span class="label">Accent colour</span>
+          <div id="swatches" class="swatches" role="group" aria-label="Catppuccin accent colours"></div>
+        </div>
+        <label class="row"><span>Custom accent</span><input type="color" data-setting="accent"></label>
+        <label class="row"><span>Font</span>
+          <select data-setting="font" id="fontSelect" data-wide="1"></select>
+        </label>
+        <p class="hint" id="fontHint" hidden>Theme fonts load from Google Fonts only while selected, which tells Google your IP address. Without a connection, system fonts are used instead.</p>
+        <label class="row"><span>Tile style</span>
+          <select data-setting="tileStyle"><option value="card">Card with accent bar</option><option value="rounded">Rounded</option></select>
+        </label>
+        <label class="row"><span>Tile width</span><input type="range" min="100" max="300" step="5" data-setting="tileWidth"></label>
+        <label class="row"><span>Icon size</span><input type="range" min="24" max="128" step="4" data-setting="iconSize"></label>
+        <label class="row"><span>Icon colour</span>
+          <select data-setting="iconTint"><option value="accent">Accent colour</option><option value="original">Original colours</option></select>
+        </label>
+        <label class="row"><span>Tile icons</span>
+          <select data-setting="tileIcons"><option value="letters">Letters (private)</option><option value="favicons">Site favicons</option></select>
+        </label>
+        <label class="row"><span>Clock size</span><input type="range" min="60" max="160" step="5" data-setting="clockSize"></label>
+        <p class="hint" id="faviconHint" hidden>Favicons are fetched from DuckDuckGo's icon service, which reveals the domains of your tiles.</p>
+      </details>
+
+      <details>
+        <summary>Background</summary>
+        <label class="row"><span>Animation</span>
+          <select data-setting="fx">
+            <option value="none">None</option>
+            <option value="aurora">Aurora</option>
+            <option value="gradient">Shifting gradient</option>
+            <option value="stars">Starry night</option>
+            <option value="rain">Rain</option>
+            <option value="snow">Snow</option>
+            <option value="fireflies">Fireflies</option>
+            <option value="waves">Waves</option>
+            <option value="weather">Match the weather</option>
+          </select>
+        </label>
+        <label class="row"><span>Speed</span><input type="range" min="0.25" max="2" step="0.05" data-setting="fxSpeed"></label>
+        <label class="row"><span>Amount</span><input type="range" min="0.3" max="2" step="0.1" data-setting="fxDensity"></label>
+        <p class="hint" id="fxHint" hidden>Your system's “reduce motion” setting is on, so animations show a still frame.</p>
+        <label class="row"><span>Photo by time of day</span>
+          <select data-setting="photoMode">
+            <option value="none">Off</option>
+            <option value="custom">My own photos</option>
+          </select>
+        </label>
+        <div id="photoBox" hidden>
+          <p class="hint" id="photoNow"></p>
+          <div id="photoSlots" class="photoSlots"></div>
+          <p class="hint" id="photoHint">The photo follows your computer's clock and fades between dawn, day, dusk and night. City photos load from Wikimedia Commons (which sees your IP address). Replace any slot with your own picture; uploads stay inside the extension.</p>
+        </div>
+        <label class="row"><span>Image URL</span><input type="url" id="bgUrl" placeholder="https://…"></label>
+        <div class="inline">
+          <label class="btn ghost fileBtn">Upload image<input type="file" id="bgFile" accept="image/*" hidden></label>
+          <button type="button" id="bgClear" class="btn ghost">Clear</button>
+        </div>
+        <label class="row"><span>Dim</span><input type="range" min="0" max="90" data-setting="bgDim"></label>
+        <label class="row"><span>Blur</span><input type="range" min="0" max="30" data-setting="bgBlur"></label>
+      </details>
+
+      <details>
+        <summary>Backup</summary>
+        <div class="inline">
+          <button type="button" id="exportBtn" class="btn">Export</button>
+          <label class="btn ghost fileBtn">Import<input type="file" id="importFile" accept="application/json,.json" hidden></label>
+          <button type="button" id="resetBtn" class="btn danger">Reset all</button>
+        </div>
+        <p id="backupMsg" class="hint"></p>
+      </details>
+    </div>
+    </div>
+  </aside>
+
+  <!-- Link dialog -->
+  <dialog id="linkDialog">
+    <form method="dialog" id="linkForm">
+      <h3 id="linkDialogTitle">Link</h3>
+      <label class="stack"><span class="label">Title</span><input id="linkTitle" type="text" required></label>
+      <label class="stack"><span class="label">Address</span><input id="linkUrl" type="text" placeholder="example.com" required></label>
+      <div class="stack">
+        <span class="label">Icon</span>
+        <div class="iconRow">
+          <div id="iconPreview" class="iconPreview"></div>
+          <div class="iconBtns">
+            <button type="button" id="iconSearchBtn" class="btn ghost">Search icons</button>
+            <label class="btn ghost fileBtn">Upload image<input type="file" id="iconFile" accept="image/*" hidden></label>
+            <button type="button" id="iconReset" class="btn ghost">Automatic</button>
+          </div>
+        </div>
+        <label class="row"><span>Icon colour</span>
+          <select id="iconTintSel"><option value="">Follow setting</option><option value="accent">Accent colour</option><option value="original">Original colours</option></select>
+        </label>
+        <input id="iconUrl" type="text" placeholder="…or paste an image address (https://…)">
+        <div id="iconSearch" class="iconSearch" hidden>
+          <div class="inline">
+            <input id="iconQuery" type="text" placeholder="Search icons, e.g. github">
+            <button type="button" id="iconQueryBtn" class="btn">Search</button>
+          </div>
+          <div id="iconResults" class="iconResults"></div>
+          <p id="iconMsg" class="hint"></p>
+          <p class="hint">Icons come from Iconify. Your search words are sent to it; the icon you pick is saved inside the extension.</p>
+        </div>
+      </div>
+      <p id="linkErr" class="hint err" hidden></p>
+      <div class="dialogBtns">
+        <button type="button" id="linkDelete" class="btn danger">Delete</button>
+        <span class="spacer"></span>
+        <button type="button" id="linkCancel" class="btn ghost">Cancel</button>
+        <button type="submit" class="btn">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Group dialog -->
+  <dialog id="groupDialog">
+    <form method="dialog" id="groupForm">
+      <h3>Group</h3>
+      <label class="stack"><span class="label">Name</span><input id="groupName" type="text" required></label>
+      <div class="dialogBtns">
+        <button type="button" id="groupDelete" class="btn danger">Delete group</button>
+        <span class="spacer"></span>
+        <button type="button" id="groupCancel" class="btn ghost">Cancel</button>
+        <button type="submit" class="btn">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="newtab.js"></script>
+</body>
+</html>

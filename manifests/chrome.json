@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "WeatherTab",
+  "version": "1.0.0",
+  "description": "A clean, customisable new tab page with a clock, search, grouped bookmark tiles and live weather. No tracking, no accounts.",
+  "icons": { "16": "icon16.png", "32": "icon32.png", "48": "icon48.png", "128": "icon128.png" },
+  "chrome_url_overrides": { "newtab": "newtab.html" },
+  "permissions": ["storage", "unlimitedStorage", "search"],
+  "host_permissions": [
+    "https://api.open-meteo.com/*",
+    "https://geocoding-api.open-meteo.com/*",
+    "https://api.iconify.design/*"
+  ]
+}

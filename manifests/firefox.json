@@ -1,0 +1,27 @@
+{
+  "manifest_version": 2,
+  "name": "WeatherTab",
+  "version": "1.0.0",
+  "description": "A clean, customisable new tab page with a clock, search, grouped bookmark tiles and live weather. No tracking, no accounts.",
+  "icons": {
+    "48": "icon.svg",
+    "96": "icon.svg"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "weathertab@example.local",
+      "strict_min_version": "91.0"
+    }
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "search",
+    "https://api.open-meteo.com/*",
+    "https://api.iconify.design/*",
+    "https://geocoding-api.open-meteo.com/*"
+  ]
+}
